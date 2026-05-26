@@ -205,6 +205,89 @@ You can customize almost all characteristics of the overlay and session through 
 | `showSecondsInLabel` | `ApiInspectorOverlay` | Displays the remaining countdown time in the bubble | `true` |
 | `showRequestCountInLabel` | `ApiInspectorOverlay` | Displays the total request count inside the bubble | `true` |
 
+## 🚀 Advanced Integration Patterns
+
+### 1. State Management & DI Integration (GetIt / Riverpod)
+In larger production applications, instead of global variables, you should manage your inspector using standard dependency injection or state management architectures:
+
+#### GetIt Setup (Highly Recommended)
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:assistive_touch_overlay/api_inspector.dart';
+
+final getIt = GetIt.instance;
+
+void setupDependencies() {
+  if (!kReleaseMode) {
+    getIt.registerSingleton<ApiInspectorService>(ApiInspectorService());
+    getIt.registerSingleton<ApiInspectorController>(
+      ApiInspectorController(service: getIt<ApiInspectorService>()),
+    );
+  }
+}
+```
+
+#### Riverpod Setup
+```dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:assistive_touch_overlay/api_inspector.dart';
+
+final apiInspectorServiceProvider = Provider<ApiInspectorService>((ref) {
+  return ApiInspectorService();
+});
+
+final apiInspectorControllerProvider = Provider<ApiInspectorController>((ref) {
+  final service = ref.watch(apiInspectorServiceProvider);
+  return ApiInspectorController(service: service);
+});
+```
+
+---
+
+### 2. Gesture-Triggered Visibility (Shake or Multi-tap)
+If you don't want the floating bubble to be permanently visible in your dev builds, you can hide it by default and toggle its visibility using custom gestures (like a shake or a secret double-tap on your logo):
+
+```dart
+import 'package:flutter/material.dart';
+
+// Example: Secret triple-tap to toggle visibility
+GestureDetector(
+  onTapDown: (details) {
+    if (details.kind == PointerDeviceKind.touch) {
+      // Logic for tracking triple taps or custom gestures
+    }
+  },
+  child: MyLogoWidget(),
+);
+
+// Toggle visibility programmatically from anywhere:
+apiInspectorController.toggleOverlayVisible();
+```
+
+---
+
+### 3. Flavor-Based Environments
+For apps using build flavors (e.g. `dev`, `staging`, `prod`), configure the overlay to only instantiate and render on `dev` and `staging` pipelines:
+
+```dart
+import 'package:flutter/material.dart';
+import 'my_app_config.dart'; // Contains environment config (e.g. AppEnvironment.prod)
+
+// Global overlay builder
+builder: (context, child) {
+  final showDebugTools = AppConfig.environment != AppEnvironment.prod;
+
+  return Stack(
+    children: [
+      if (child != null) child,
+      if (showDebugTools)
+        ApiInspectorOverlay(controller: apiInspectorController),
+    ],
+  );
+}
+```
+
 ---
 
 ## 💡 How to Use the UI (On-Device Flow)
@@ -214,8 +297,6 @@ You can customize almost all characteristics of the overlay and session through 
 3. **Finish Capture**: Wait for the countdown timer to expire, or tap the bubble again to manually stop recording.
 4. **Open Logs**: Once stopped, the bubble will turn **green** (or **orange/red** if errors occurred). Tap it once more to open the scrollable **API Calls List Screen**.
 5. **Inspect & Copy**: Tap any request card to see full query params, headers, response bodies, and generated **cURL** command strings.
-
----
 
 ### 🌟 Credits
 Special thanks to **Safal Shrestha** for the design and co-creation of these interactive flows!
