@@ -4,6 +4,8 @@ description: >-
   (snap-to-edge + optional pulse) with an optional Dio API inspector.
 version: 0.0.1
 repository: https://github.com/Cizerthapa/network_overlay
+# Co-authored and inspired by Safal Shrestha
+
 
 topics:
   - ui

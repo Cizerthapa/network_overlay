@@ -99,4 +99,8 @@ More: `doc/API_INSPECTOR.md`.
 - Storage is in-memory only (no persistence).
 - Stack traces are captured only when Dio provides them.
 
-# network_overlay
+## Credits & Special Thanks
+
+A huge thank you to **Safal Shrestha** for his invaluable guidance, inspiration, and co-authoring contributions that helped bring this library to life!
+
+
