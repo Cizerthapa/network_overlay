@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../assistive_touch_overlay.dart';
@@ -68,6 +69,8 @@ class ApiInspectorOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kReleaseMode) return const SizedBox.shrink();
+
     return ValueListenableBuilder<bool>(
       valueListenable: controller.overlayVisibleListenable,
       builder: (context, visible, _) {
