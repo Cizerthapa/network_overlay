@@ -3,7 +3,7 @@ description: >-
   Assistive Touch-style draggable floating bubble overlay for Flutter
   (snap-to-edge + optional pulse) with an optional Dio API inspector.
 version: 0.0.1
-repository: https://github.com/your-username/assistive_touch_overlay
+repository: https://github.com/Cizerthapa/network_overlay
 
 topics:
   - ui
