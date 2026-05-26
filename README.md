@@ -2,8 +2,12 @@
 
 Assistive Touch-style draggable floating bubble overlay for Flutter (snap-to-edge + optional pulse), plus an optional Dio API inspector (interceptor + overlay UI).
 
+📖 **[What is this & Why is it useful? (INTRO.md)](INTRO.md)**  
+🛠️ **[Full Setup & Integration Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md)**
+
 - `AssistiveTouchOverlay`: reusable overlay primitive (no app-specific DI required)
 - API inspector (Dio): `ApiInspectorService` + `ApiInspectorInterceptor` + `ApiInspectorController` + `ApiInspectorOverlay`
+
 
 ## Install
 
