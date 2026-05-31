@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../assistive_touch_overlay.dart';
 import '../api_call_record.dart';
 import '../api_inspector_controller.dart';
+import 'api_calls_list_screen.dart';
 
 /// Drop-in overlay that shows/hides based on [ApiInspectorController].
 ///
@@ -22,7 +23,7 @@ import '../api_inspector_controller.dart';
 ///   },
 /// )
 /// ```
-class ApiInspectorOverlay extends StatelessWidget {
+class ApiInspectorOverlay extends StatefulWidget {
   /// Creates an [ApiInspectorOverlay].
   const ApiInspectorOverlay({
     super.key,
@@ -68,16 +69,55 @@ class ApiInspectorOverlay extends StatelessWidget {
   final double badgeDiameter;
 
   @override
+  State<ApiInspectorOverlay> createState() => _ApiInspectorOverlayState();
+}
+
+class _ApiInspectorOverlayState extends State<ApiInspectorOverlay> {
+  ApiInspectorState? _prevState;
+
+  @override
+  void initState() {
+    super.initState();
+    _prevState = widget.controller.stateListenable.value;
+    widget.controller.stateListenable.addListener(_onStateChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.stateListenable.removeListener(_onStateChanged);
+    super.dispose();
+  }
+
+  void _onStateChanged() {
+    final prev = _prevState;
+    final curr = widget.controller.stateListenable.value;
+    _prevState = curr;
+    if (prev is ApiInspectorRecording && curr is ApiInspectorDone) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context, rootNavigator: true).push(
+          MaterialPageRoute<void>(
+            builder: (_) => ApiCallsListScreen(
+              controller: widget.controller,
+              records: curr.records,
+            ),
+          ),
+        );
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (kReleaseMode) return const SizedBox.shrink();
 
     return ValueListenableBuilder<bool>(
-      valueListenable: controller.overlayVisibleListenable,
+      valueListenable: widget.controller.overlayVisibleListenable,
       builder: (context, visible, _) {
         if (!visible) return const SizedBox.shrink();
 
         return ValueListenableBuilder<ApiInspectorState>(
-          valueListenable: controller.stateListenable,
+          valueListenable: widget.controller.stateListenable,
           builder: (context, state, __) {
             final isRecording = state is ApiInspectorRecording;
             final isDone = state is ApiInspectorDone;
@@ -111,20 +151,20 @@ class ApiInspectorOverlay extends StatelessWidget {
             };
 
             return AssistiveTouchOverlay(
-              bubbleSize: bubbleSize,
-              edgePadding: edgePadding,
-              initialPosition: controller.initialPosition,
+              bubbleSize: widget.bubbleSize,
+              edgePadding: widget.edgePadding,
+              initialPosition: widget.controller.initialPosition,
               isPulsing: isRecording,
-              onTap: () => controller.onBubbleTap(context),
+              onTap: () => widget.controller.onBubbleTap(context),
               builder: (context, pulseAnimation) {
                 final bubbleCore = _Bubble(
-                  size: bubbleSize,
+                  size: widget.bubbleSize,
                   bg: bg,
                   label: label,
                 );
 
                 Widget bubble = bubbleCore;
-                if (showRecordingBadge && isRecording) {
+                if (widget.showRecordingBadge && isRecording) {
                   bubble = Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -133,9 +173,9 @@ class ApiInspectorOverlay extends StatelessWidget {
                         right: -2,
                         top: -2,
                         child: _RecordingBadge(
-                          diameter: badgeDiameter,
+                          diameter: widget.badgeDiameter,
                           errorCount: errorCount,
-                          showErrorCount: showRecordingErrorCountInBadge,
+                          showErrorCount: widget.showRecordingErrorCountInBadge,
                           isFatal: hasFatal,
                         ),
                       ),
@@ -158,10 +198,10 @@ class ApiInspectorOverlay extends StatelessWidget {
 
   String _recordingLabel(ApiInspectorRecording r) {
     final parts = <String>[];
-    if (showSecondsInLabel) {
+    if (widget.showSecondsInLabel) {
       parts.add('${r.secondsLeft}s');
     }
-    if (showRequestCountInLabel) {
+    if (widget.showRequestCountInLabel) {
       parts.add('${r.count} req');
     }
     if (parts.isEmpty) {
@@ -171,7 +211,7 @@ class ApiInspectorOverlay extends StatelessWidget {
   }
 
   String _doneLabel(ApiInspectorDone d) {
-    if (showDoneErrorCountInLabel && d.errorCount > 0) {
+    if (widget.showDoneErrorCountInLabel && d.errorCount > 0) {
       return '⚠ ${d.errorCount}\n${d.records.length}';
     }
     return '✓ ${d.records.length}';

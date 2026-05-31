@@ -134,20 +134,16 @@ class ApiInspectorController {
   /// Recommended handler for bubble tap.
   ///
   /// - If capture is done, opens the calls list screen.
-  /// - Otherwise, toggles capture. If capture transitions to done, opens the
-  ///   calls list.
+  /// - Otherwise, toggles capture. Auto-navigation on Recording→Done is
+  ///   handled by [ApiInspectorOverlay]'s state listener (covers both
+  ///   manual stop and timer-based auto-stop).
   void onBubbleTap(BuildContext context) {
     final state = stateListenable.value;
     if (state is ApiInspectorDone) {
       _openCallsScreen(context, state.records);
       return;
     }
-
     toggleCapture();
-    final newState = stateListenable.value;
-    if (newState is ApiInspectorDone) {
-      _openCallsScreen(context, newState.records);
-    }
   }
 
   void _startRecording() {

@@ -1,3 +1,7 @@
+## 0.0.3
+
+- **Auto-navigate to captured calls**: The inspector now automatically opens the API calls list screen when recording stops — whether the capture window times out or the user taps to stop manually. Previously, the list only appeared if the user knew to tap the bubble a second time after recording ended.
+
 ## 0.0.2
 
 - **Release-Mode Protection**: Automatically hide the `ApiInspectorOverlay` in release mode (`kReleaseMode`) so it never renders or consumes overhead in production.
